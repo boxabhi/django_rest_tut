@@ -14,6 +14,10 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class StudentSerializer(serializers.ModelSerializer):
+    """
+        Student Serializer for handling CRUD operation
+    """
+
     stundent_id = serializers.CharField(required = False , allow_null = True , allow_blank = True)
     #student_department = DepartmentSerializer(many = True , read_only = True)
     department = serializers.SerializerMethodField()
