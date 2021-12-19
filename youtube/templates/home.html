@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <br>
+    <br>
+    <br>
+    <div>
+        <input type="file" id="file" name="fileupload">
+
+        <button id="btn" onclick="uploadFile()">Upload</button>
+
+        <div id="show_images">
+
+        </div>
+    </div>
+
+
+
+    <script>
+        function makeid(length) {
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() *
+                    charactersLength));
+            }
+            return result;
+        }
+
+        function addImages(images){
+            var element = document.getElementById('show_images')
+            console.log(images)
+            for(var i =0; i< images.length ; i++){
+
+                element.innerHTML += `<img src="/${images[i]}" style="height:100px"> <br>`
+            }
+            
+        }
+
+        async function uploadFile() {
+            console.log('clicl')
+            var socket_url = makeid(7)
+            window.history.pushState('page', 'page', `/${socket_url}`);
+
+            var socket = new WebSocket(`ws://127.0.0.1:8000/ws/thumbnails/${socket_url}`)
+            socket.onopen = function (e) {
+                console.log('Connection established');
+            };
+
+            socket.onmessage = function (e) {
+                var data = JSON.parse(e.data)
+                console.log(data.payload.images)
+                if(data.payload.images){
+
+                    addImages(data.payload.images)
+                }
+
+            };
+            socket.onclose = function (e) {
+                console.log('Connection closed');
+            };
+
+            let formData = new FormData();
+            var file = document.getElementById("file").files[0];
+            console.log(file)
+            formData.append("video", file);
+            formData.append("socket_url", socket_url);
+            formData.append('csrfmiddlewaretoken', "{{csrf_token}}");
+            await fetch('/upload/', {
+                    method: "POST",
+                    body: formData
+                }).then(res => res.json())
+                .then(result => {
+                    console.log(result)
+                })
+            //alert('The file has been uploaded successfully.');
+
+
+
+
+
+
+
+
+
+
+
+        }
+    </script>
+</body>
+
+</html>
